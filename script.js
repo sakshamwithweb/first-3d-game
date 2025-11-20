@@ -1,3 +1,4 @@
+import { CharacterControls } from "./character.js";
 import * as THREE from "./three/build/three.module.js"
 import { OrbitControls } from "./three/examples/jsm/controls/OrbitControls.js"
 import { GLTFLoader } from "./three/examples/jsm/loaders/GLTFLoader.js";
@@ -6,6 +7,7 @@ class Game {
     constructor() {
         // variables
         this.glbLoader = new GLTFLoader();
+        this.clock = new THREE.Clock();
 
         // Setups
         this.initSceneAndRenderer()
@@ -33,7 +35,6 @@ class Game {
 
         this.camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000)
         this.camera.position.set(0, 4, 10)
-        this.camera.lookAt(0, 0, 0)
         this.scene.add(this.camera)
 
         this.light = new THREE.AmbientLight(0xffffff, 1)
@@ -53,26 +54,26 @@ class Game {
         this.scene.add(this.sphereMesh)
     }
 
-    // loadModel() {
-    //     this.glbLoader.load('./model.glb', function (gltf) {
-    //         this.carMesh = gltf.scene
-    //         this.scene.add(this.carMesh)
-    //     }.bind(this));
-    // }
-
     loadModel() {
         this.glbLoader.load('./model.glb', function (gltf) {
             this.carMesh = gltf.scene
             this.carMesh.traverse((object) => {
                 if (object.isMesh) object.castShadow = true
             })
+
+            const idleClip = new THREE.AnimationClip("idle", 3, [])
+            gltf.animations.push(idleClip) // insert idle animation
+
             let allAnimations = gltf.animations
             let mixer = new THREE.AnimationMixer(this.carMesh)
 
-            const animationMap = new Map()
-            allAnimations.forEach((animation) => {
-                animationMap.set(animation.name, mixer.clipAction)
+            const animationsMap = new Map()
+            allAnimations.forEach((a) => {
+                animationsMap.set(a.name, mixer.clipAction(a))
             })
+
+            this.characterControls = new CharacterControls(this.carMesh, mixer, animationsMap, this.controls, this.camera, "idle") // Instantiate CharacterControls as well as keep the player(car) in idle mode
+
             this.scene.add(this.carMesh)
         }.bind(this));
     }
@@ -81,16 +82,20 @@ class Game {
         this.keyPressed = {} // Why to make an object and store the keys rather than array?
         document.addEventListener('keydown', (e) => {
             this.keyPressed[e.key.toLowerCase()] = true
-            console.log(this.keyPressed)
         },)
         document.addEventListener('keyup', (e) => {
             this.keyPressed[e.key.toLowerCase()] = false
-            console.log(this.keyPressed)
         })
     }
 
     animate() {
         this.controls.update()
+
+        if (this.characterControls) {
+            // Here update the actions, state or whatevea
+            this.characterControls.update(this.clock.getDelta(), this.keyPressed)
+        }
+
         this.render()
     }
 

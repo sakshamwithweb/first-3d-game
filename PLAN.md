@@ -1,7 +1,7 @@
-- Make floor(mountain area randomly generated) and sky
-- Turn left and right
-
-
+- [x] Make floor
+- [ ] (mountain area randomly generated) and sky
+- [ ] Turn left and right
+- [ ] Reverse wheels when go back.
 
 
 [Future]

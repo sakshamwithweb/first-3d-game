@@ -2,10 +2,12 @@ import { CharacterControls } from "./character.js";
 import * as THREE from "../../three/build/three.module.js"
 import { OrbitControls } from "../../three/examples/jsm/controls/OrbitControls.js"
 import { GLTFLoader } from "../../three/examples/jsm/loaders/GLTFLoader.js";
+import { deg2rad } from "./utils.js";
 
 class Game {
     constructor() {
         // variables
+        this.textureLoader = new THREE.TextureLoader()
         this.glbLoader = new GLTFLoader();
         this.clock = new THREE.Clock();
 
@@ -13,10 +15,11 @@ class Game {
         this.initSceneAndRenderer()
         this.initBasicSetup()
         this.resize()
+        this.createFloor()
+        this.loadModel()
 
         // Mid
         // this.createShape()
-        this.loadModel()
         this.controlCharacter()
 
         // Render and animate()
@@ -24,33 +27,66 @@ class Game {
     }
 
     initSceneAndRenderer() {
+        // Scene
         this.scene = new THREE.Scene()
-        this.renderer = new THREE.WebGLRenderer()
+
+        //Renderer: Size, pixelratio and shadowMap
+        this.renderer = new THREE.WebGLRenderer({ antialias: true })
         this.renderer.setSize(window.innerWidth, window.innerHeight)
+        this.renderer.setPixelRatio(window.devicePixelRatio)
+        this.renderer.shadowMap.enabled = true
+
         document.body.appendChild(this.renderer.domElement)
     }
 
     initBasicSetup() {
-        // Camera, lightning, orbit controls, gridHelper
-
+        // Camera
         this.camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000)
         this.camera.position.set(0, 4, 10)
         this.scene.add(this.camera)
 
-        this.light = new THREE.AmbientLight(0xffffff, 1)
-        this.scene.add(this.light)
+        // Light
+        this.scene.add(new THREE.AmbientLight(0xffffff, 0.7))
 
+        // Directional light for shadow and good light
+        this.dirLight = new THREE.DirectionalLight(0xffffff, 1)
+        this.dirLight.position.set(-60, 100, -10)
+        // Afaik when castShadow is enabled, three.js creates an internal hidden orthographic camera. the camera renders the scene from light's pov to generate shadow map
+        // These are defining size of camera's area or shadow coverage area.
+        this.dirLight.castShadow = true
+        this.dirLight.shadow.camera.top = 50;
+        this.dirLight.shadow.camera.bottom = -50;
+        this.dirLight.shadow.camera.left = -50
+        this.dirLight.shadow.camera.right = 50
+        this.dirLight.shadow.camera.near = 0.1;
+        this.dirLight.shadow.camera.far = 200;
+        // It is like resolution the less the unclear..
+        this.dirLight.shadow.mapSize.width = 4096;
+        this.dirLight.shadow.mapSize.height = 4096;
+        this.scene.add(this.dirLight)
+
+        // Controls
         this.controls = new OrbitControls(this.camera, this.renderer.domElement)
+        this.controls.enableDamping = true
+        this.controls.minDistance = 5
+        this.controls.maxDistance = 15
+        this.controls.enablePan = false
+        this.controls.maxPolarAngle = Math.PI / 2 - 0.05
 
-        this.gridHelper = new THREE.GridHelper(100, 40)
-        this.scene.add(this.gridHelper)
+        // GridHelper
+        // this.gridHelper = new THREE.GridHelper(100, 40)
+        // this.scene.addw(this.gridHelper)
     }
 
     createShape() {
-        const geometry = new THREE.SphereGeometry(5)
-        const material = new THREE.MeshStandardMaterial({ color: 0xF54927, wireframe: true })
+        const geometry = new THREE.SphereGeometry(2)
+        const material = new THREE.MeshStandardMaterial({ color: 0xF54927 })
 
         this.sphereMesh = new THREE.Mesh(geometry, material)
+        this.sphereMesh.position.set(0, 2, 0)
+        this.sphereMesh.traverse((object) => {
+            object.castShadow = true
+        })
         this.scene.add(this.sphereMesh)
     }
 
@@ -60,6 +96,7 @@ class Game {
             this.carMesh.traverse((object) => {
                 if (object.isMesh) object.castShadow = true
             })
+            this.carMesh.position.y = -0.2 // To avoid the airgap created by displacementScale(createFloor())
 
             const idleClip = new THREE.AnimationClip("idle", 3, [])
             gltf.animations.push(idleClip) // insert idle animation
@@ -86,6 +123,40 @@ class Game {
         document.addEventListener('keyup', (e) => {
             this.keyPressed[e.key.toLowerCase()] = false
         })
+    }
+
+    async createFloor() {
+        const wrapAndRepeatTexture = (map) => {
+            map.wrapS = map.wrapT = THREE.RepeatWrapping
+            map.repeat.x = map.repeat.y = 5
+        }
+
+        const sandBaseColor = this.textureLoader.load("./assets/textures/Sand_COLOR.jpg") // Base color
+        const sandNormalMap = this.textureLoader.load('./assets/textures/Sand_NRM.jpg') // Fake 3d like effect
+        const sendHeightMap = this.textureLoader.load("./assets/textures/Sand_DISP.jpg") // Real height that can odify geometry
+        const sandAmbientOcclusion = this.textureLoader.load("./assets/textures/Sand_OCC.jpg") // Tells how much ambient light pixels must get(darker area means low and brighter means high)
+
+        const WIDTH = 100;
+        const LENGTH = 100;
+
+        const geometry = new THREE.PlaneGeometry(WIDTH, LENGTH, 512, 512) // segments to make disp work I think..
+        const material = new THREE.MeshStandardMaterial({
+            map: sandBaseColor,
+            normalMap: sandNormalMap,
+            displacementMap: sendHeightMap,
+            displacementScale: 0.5,
+            aoMap: sandAmbientOcclusion
+        })
+        wrapAndRepeatTexture(material.map)
+        wrapAndRepeatTexture(material.normalMap)
+        wrapAndRepeatTexture(material.displacementMap)
+        wrapAndRepeatTexture(material.aoMap)
+
+        this.floor = new THREE.Mesh(geometry, material)
+        this.floor.receiveShadow = true
+        this.floor.rotateX(deg2rad(90))
+        material.side = THREE.BackSide // Or DoubleSide
+        this.scene.add(this.floor)
     }
 
     animate() {

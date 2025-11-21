@@ -1,7 +1,7 @@
 import { CharacterControls } from "./character.js";
-import * as THREE from "./three/build/three.module.js"
-import { OrbitControls } from "./three/examples/jsm/controls/OrbitControls.js"
-import { GLTFLoader } from "./three/examples/jsm/loaders/GLTFLoader.js";
+import * as THREE from "../../three/build/three.module.js"
+import { OrbitControls } from "../../three/examples/jsm/controls/OrbitControls.js"
+import { GLTFLoader } from "../../three/examples/jsm/loaders/GLTFLoader.js";
 
 class Game {
     constructor() {
@@ -55,7 +55,7 @@ class Game {
     }
 
     loadModel() {
-        this.glbLoader.load('./model.glb', function (gltf) {
+        this.glbLoader.load('./assets/model.glb', function (gltf) {
             this.carMesh = gltf.scene
             this.carMesh.traverse((object) => {
                 if (object.isMesh) object.castShadow = true

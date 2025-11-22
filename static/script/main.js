@@ -91,7 +91,7 @@ class Game {
     }
 
     loadModel() {
-        this.glbLoader.load('./assets/model.glb', function (gltf) {
+        this.glbLoader.load('./assets/modals/car1.glb', function (gltf) {
             this.carMesh = gltf.scene
             this.carMesh.traverse((object) => {
                 if (object.isMesh) object.castShadow = true
@@ -131,10 +131,10 @@ class Game {
             map.repeat.x = map.repeat.y = 5
         }
 
-        const sandBaseColor = this.textureLoader.load("./assets/textures/Sand_COLOR.jpg") // Base color
-        const sandNormalMap = this.textureLoader.load('./assets/textures/Sand_NRM.jpg') // Fake 3d like effect
-        const sendHeightMap = this.textureLoader.load("./assets/textures/Sand_DISP.jpg") // Real height that can odify geometry
-        const sandAmbientOcclusion = this.textureLoader.load("./assets/textures/Sand_OCC.jpg") // Tells how much ambient light pixels must get(darker area means low and brighter means high)
+        const sandBaseColor = this.textureLoader.load("./assets/textures/sand/Sand_COLOR.jpg") // Base color
+        const sandNormalMap = this.textureLoader.load('./assets/textures/sand/Sand_NRM.jpg') // Fake 3d like effect
+        const sendHeightMap = this.textureLoader.load("./assets/textures/sand/Sand_DISP.jpg") // Real height that can odify geometry
+        const sandAmbientOcclusion = this.textureLoader.load("./assets/textures/sand/Sand_OCC.jpg") // Tells how much ambient light pixels must get(darker area means low and brighter means high)
 
         const WIDTH = 100;
         const LENGTH = 100;

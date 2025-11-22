@@ -76,7 +76,7 @@ class Game {
 
         // GridHelper
         // this.gridHelper = new THREE.GridHelper(100, 40)
-        // this.scene.addw(this.gridHelper)
+        // this.scene.add(this.gridHelper)
     }
 
     createShape() {
@@ -140,7 +140,22 @@ class Game {
         const WIDTH = 100;
         const LENGTH = 100;
 
-        const geometry = new THREE.PlaneGeometry(WIDTH, LENGTH, 512, 512) // segments to make disp work I think..
+        const geometry = new THREE.PlaneGeometry(WIDTH, LENGTH, 10,10) // segments to make disp work and deform I think..
+
+        
+        // Deforming the geometry
+        const positionAttribute = geometry.attributes.position
+        for(let i = 0; i < positionAttribute.count; i++){
+            let x = positionAttribute.getX(i)
+            let y = positionAttribute.getY(i)
+            let z = positionAttribute.getZ(i)
+
+            z += Math.random() * 2
+
+            positionAttribute.setXYZ(i,x,y,z)
+        }
+
+        // Material and Texture
         const material = new THREE.MeshStandardMaterial({
             map: sandBaseColor,
             normalMap: sandNormalMap,
@@ -152,11 +167,11 @@ class Game {
         wrapAndRepeatTexture(material.normalMap)
         wrapAndRepeatTexture(material.displacementMap)
         wrapAndRepeatTexture(material.aoMap)
-
+        
         this.floor = new THREE.Mesh(geometry, material)
         this.floor.receiveShadow = true
         this.floor.rotateX(deg2rad(90))
-        material.side = THREE.DoubleSide // Or DoubleSide
+        material.side = THREE.DoubleSide
         this.scene.add(this.floor)
     }
 
@@ -164,7 +179,7 @@ class Game {
         const geometry = new THREE.SphereGeometry(50)
         const texture = this.textureLoader.load("./assets/textures/sky/sky_2k.jpg")
         const material = new THREE.MeshStandardMaterial({
-            map:texture
+            map: texture
         })
         material.side = THREE.DoubleSide
         this.sky = new THREE.Mesh(geometry, material)

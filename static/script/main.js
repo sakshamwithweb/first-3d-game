@@ -16,6 +16,7 @@ class Game {
         this.initBasicSetup()
         this.resize()
         this.createFloor()
+        this.createSky()
         this.loadModel()
 
         // Mid
@@ -50,7 +51,7 @@ class Game {
 
         // Directional light for shadow and good light
         this.dirLight = new THREE.DirectionalLight(0xffffff, 1)
-        this.dirLight.position.set(-60, 100, -10)
+        this.dirLight.position.set(60, 70, -10)
         // Afaik when castShadow is enabled, three.js creates an internal hidden orthographic camera. the camera renders the scene from light's pov to generate shadow map
         // These are defining size of camera's area or shadow coverage area.
         this.dirLight.castShadow = true
@@ -125,16 +126,16 @@ class Game {
         })
     }
 
-    async createFloor() {
+    createFloor() {
         const wrapAndRepeatTexture = (map) => {
             map.wrapS = map.wrapT = THREE.RepeatWrapping
             map.repeat.x = map.repeat.y = 5
         }
 
-        const sandBaseColor = this.textureLoader.load("./assets/textures/sand/Sand_COLOR.jpg") // Base color
-        const sandNormalMap = this.textureLoader.load('./assets/textures/sand/Sand_NRM.jpg') // Fake 3d like effect
-        const sendHeightMap = this.textureLoader.load("./assets/textures/sand/Sand_DISP.jpg") // Real height that can odify geometry
-        const sandAmbientOcclusion = this.textureLoader.load("./assets/textures/sand/Sand_OCC.jpg") // Tells how much ambient light pixels must get(darker area means low and brighter means high)
+        const sandBaseColor = this.textureLoader.load("./assets/textures/grass/Grass_COLOR.jpg") // Base color
+        const sandNormalMap = this.textureLoader.load('./assets/textures/grass/Grass_NRM.jpg') // Fake 3d like effect
+        const sendHeightMap = this.textureLoader.load("./assets/textures/grass/Grass_DISP.jpg") // Real height that can odify geometry
+        const sandAmbientOcclusion = this.textureLoader.load("./assets/textures/grass/Grass_OCC.jpg") // Tells how much ambient light pixels must get(darker area means low and brighter means high)
 
         const WIDTH = 100;
         const LENGTH = 100;
@@ -155,8 +156,20 @@ class Game {
         this.floor = new THREE.Mesh(geometry, material)
         this.floor.receiveShadow = true
         this.floor.rotateX(deg2rad(90))
-        material.side = THREE.BackSide // Or DoubleSide
+        material.side = THREE.DoubleSide // Or DoubleSide
         this.scene.add(this.floor)
+    }
+
+    createSky() {
+        const geometry = new THREE.SphereGeometry(50)
+        const texture = this.textureLoader.load("./assets/textures/sky/sky_2k.jpg")
+        const material = new THREE.MeshStandardMaterial({
+            map:texture
+        })
+        material.side = THREE.DoubleSide
+        this.sky = new THREE.Mesh(geometry, material)
+        this.sky.position.y = -1
+        this.scene.add(this.sky)
     }
 
     animate() {

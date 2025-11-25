@@ -161,16 +161,16 @@ class Game {
 
 
         // Deforming the geometry
-        const positionAttribute = geometry.attributes.position
-        for(let i = 0; i < positionAttribute.count; i++){
-            let x = positionAttribute.getX(i)
-            let y = positionAttribute.getY(i)
-            let z = positionAttribute.getZ(i)
+        // const positionAttribute = geometry.attributes.position
+        // for(let i = 0; i < positionAttribute.count; i++){
+        //     let x = positionAttribute.getX(i)
+        //     let y = positionAttribute.getY(i)
+        //     let z = positionAttribute.getZ(i)
 
-            z += Math.random() * 2
+        //     z += Math.random() * 2
 
-            positionAttribute.setXYZ(i,x,y,z)
-        }
+        //     positionAttribute.setXYZ(i,x,y,z)
+        // }
 
         // Material and Texture
         const material = new THREE.MeshStandardMaterial({

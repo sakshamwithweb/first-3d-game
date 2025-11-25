@@ -10,5 +10,5 @@ Controls:
 - W/S: Forward/Backward
 - A/D: Turn Left or Right Side
 
-I know the camera is moving right with the model but I'll fix later..
+I know the camera is moving incorrect with the model but I'll fix later..
 <img width="1920" height="1007" alt="image" src="https://github.com/user-attachments/assets/8debc314-9090-4932-a420-2202586fd6c2" />

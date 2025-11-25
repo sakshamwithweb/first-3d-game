@@ -1,7 +1,8 @@
 - [x] Make floor and Sky
-- [ ] (mountain area randomly generated).
+- [x] (mountain area randomly generated).
 - [ ] Turn left and right
 - [ ] Reverse wheels when go back.
+- [ ] Make the plain endless
 
 
 [Future]

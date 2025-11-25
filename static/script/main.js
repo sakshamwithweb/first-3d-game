@@ -99,15 +99,32 @@ class Game {
             })
             this.carMesh.position.y = -0.2 // To avoid the airgap created by displacementScale(createFloor())
 
+            // Other clips
             const idleClip = new THREE.AnimationClip("idle", 3, [])
-            gltf.animations.push(idleClip) // insert idle animation
+            const turnClip = gltf.animations.find(a => a.name.includes('turn'))
+
+            const leftClip = THREE.AnimationUtils.subclip(turnClip, "left_turn", 0, 40).resetDuration()
+            const rightClip = THREE.AnimationUtils.subclip(turnClip, "right_turn", 50, 80)
+
+            gltf.animations.push(idleClip)
+            gltf.animations.push(leftClip)
+            gltf.animations.push(rightClip)
 
             let allAnimations = gltf.animations
             let mixer = new THREE.AnimationMixer(this.carMesh)
 
             const animationsMap = new Map()
             allAnimations.forEach((a) => {
-                animationsMap.set(a.name, mixer.clipAction(a))
+                let clipAction = mixer.clipAction(a)
+                if (["left_turn", "right_turn"].includes(a.name)) {
+                    // Don't loop and end with last frame
+                    clipAction.setLoop(THREE.LoopOnce);
+                    clipAction.clampWhenFinished = true;
+
+                    // 3x the speed of left turn as it is slower
+                    if (a.name == "left_turn") clipAction.timeScale = 3.0
+                }
+                animationsMap.set(a.name, clipAction)
             })
 
             this.characterControls = new CharacterControls(this.carMesh, mixer, animationsMap, this.controls, this.camera, "idle") // Instantiate CharacterControls as well as keep the player(car) in idle mode
@@ -140,9 +157,9 @@ class Game {
         const WIDTH = 100;
         const LENGTH = 100;
 
-        const geometry = new THREE.PlaneGeometry(WIDTH, LENGTH, 10,10) // segments to make disp work and deform I think..
+        const geometry = new THREE.PlaneGeometry(WIDTH, LENGTH, 10, 10) // segments to make disp work and deform I think..
 
-        
+
         // Deforming the geometry
         const positionAttribute = geometry.attributes.position
         for(let i = 0; i < positionAttribute.count; i++){
@@ -167,7 +184,7 @@ class Game {
         wrapAndRepeatTexture(material.normalMap)
         wrapAndRepeatTexture(material.displacementMap)
         wrapAndRepeatTexture(material.aoMap)
-        
+
         this.floor = new THREE.Mesh(geometry, material)
         this.floor.receiveShadow = true
         this.floor.rotateX(deg2rad(90))

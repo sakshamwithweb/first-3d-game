@@ -9,3 +9,8 @@ export const deg2rad = (deg) => {
     */
     return deg * Math.PI / 180
 }
+
+export const A = "a"
+export const S = "s"
+export const W = "w"
+export const D = "d"

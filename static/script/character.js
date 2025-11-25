@@ -1,3 +1,5 @@
+import { A, D, S, W } from "./utils.js"
+
 //!!!!!!!!!!!!!!!!!!!@Currently keeping left and right same as front and back but in future make it turns(rotations!)!!!!!!!!!!!!!!!!!!!!!!
 export class CharacterControls {
     constructor(model, mixer, animationsMap, orbitControls, camera, currentAction) {
@@ -20,8 +22,35 @@ export class CharacterControls {
         this.mixer.update(delta);
 
         let play;
-        if (["w", "a", "s", "d"].some(key => keyPressed[key] == true)) {
-            play = "driving"
+
+        // I was thinking to minimize setting animations into this, will do.
+        const animationsPerKey = {
+            "": () => play = "idle",
+            "w": () => play = "driving",
+            "s": () => play = "driving_reverse",
+            "a": () => play = "left_turn",
+            "d": () => play = "right_turn"
+        }
+
+        if ([W, A, S, D].some(key => keyPressed[key] == true)) { // WASD
+            // Driving, turning or both
+
+            if ([A, D].some(key => keyPressed[key] == true)) {
+                // Turning or Driving-turning
+
+                if ([W, S].every(key => keyPressed[key] != true)) {
+                    // Only Turning
+                    play = keyPressed[A] ? "left_turn" : "right_turn"
+                } else {
+                    // Driving Turning
+                    play = "driving" // For now to avoid err
+                }
+
+            } else {
+                // Driving front or back only
+                // play = "driving"
+                play = "driving"
+            }
         } else {
             play = "idle"
         }
